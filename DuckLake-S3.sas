@@ -1,3 +1,7 @@
-/* This is the content copied from DuckLake-S3 file */
+/* Original SAS code from DuckLake-S3.sas to be inserted here */
 
-/* Add actual content from DuckLake-S3 file here */
+/* Example SAS code structure */
+data mydata;
+    set mylib.dataset;
+    /* Other SAS code goes here */
+run;
