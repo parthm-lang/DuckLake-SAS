@@ -6,9 +6,9 @@ SQL-powered Lakehouse table format that simplifies data management by using a st
 
 # DuckLake Features Demonstrated in this code: 
 
-  Basic DataOps with SQL: Table Creation, Update, Insert, Delete Rows
-  Snapshots and Time travel
-  Change-Data-Capture and Upserting
-  Schema-Evolution and Retreiving Information Schema
+•	Basic DataOps with SQL: Table Creation, Update, Insert, Delete Rows
+•	Snapshots and Time travel
+•	Change-Data-Capture and Upserting
+•	Schema-Evolution and Retreiving Information Schema
 
 Refer: https://ducklake.select/docs/stable/
