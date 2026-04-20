@@ -1,0 +1,165 @@
+/* Define base path */
+%let base_path=/your/base/path;
+%let ducklake_file=metadata1.ducklake;
+
+/* LIBNAME */
+libname duck1 sasioduk
+    file_path="&base_path./ducklib1";
+
+/* Initialize DuckLake */
+proc sql;
+    connect using duck1;
+    execute (
+        SET extension_directory='/tmp/.extensions';
+        INSTALL ducklake;
+        LOAD ducklake;
+
+        ATTACH 'ducklake:&ducklake_file.' AS metadata1
+        (DATA_PATH '&base_path./ducklib1');
+
+        USE metadata1;
+    ) by duck1;
+quit;
+
+
+/* Create table */
+proc sql;
+    connect using duck1;
+    execute (
+        CREATE TABLE IF NOT EXISTS metadata1.customers (
+            customer_id INTEGER,
+            first_name STRING,
+            last_name STRING,
+            email STRING,
+            city STRING,
+            created_at TIMESTAMP
+        );
+    ) by duck1;
+quit;
+
+
+/* Insert data */
+proc sql;
+    connect using duck1;
+    execute (
+        INSERT INTO metadata1.customers VALUES
+        (1, 'Alice', 'Smith', 'alice@example.com', 'New York', CURRENT_TIMESTAMP),
+        (2, 'Bob', 'Johnson', 'bob@example.com', 'San Francisco', CURRENT_TIMESTAMP);
+    ) by duck1;
+quit;
+
+
+/* Update */
+proc sql;
+    connect using duck1;
+    execute (
+        UPDATE metadata1.customers
+        SET city='Los Angeles'
+        WHERE customer_id=2;
+    ) by duck1;
+quit;
+
+
+/* Delete */
+proc sql;
+    connect using duck1;
+    execute (
+        DELETE FROM metadata1.customers
+        WHERE customer_id=1;
+    ) by duck1;
+quit;
+
+
+/* View table */
+proc sql;
+    connect using duck1;
+    execute (
+        SELECT * FROM metadata1.customers;
+    ) by duck1;
+quit;
+
+
+/* Pull into SAS */
+proc sql;
+    connect using duck1;
+    create table work.customers as
+    select *
+    from connection to duck1
+    (
+        select * from metadata1.customers
+    );
+quit;
+
+
+/* SNAPSHOTS */
+proc sql;
+    connect using duck1;
+    create table work.customers as
+    select *
+    from connection to duck1
+    (
+        SELECT * FROM metadata1.snapshots()
+    );
+quit;
+
+
+/* Time Travel */
+proc sql;
+    connect using duck1;
+    create table work.customersv2 as
+    select *
+    from connection to duck1
+    (
+        SELECT * FROM metadata1.customers AT (VERSION => 2)
+    );
+quit;
+
+
+/* Add column */
+proc sql;
+    connect using duck1;
+    execute (
+        ALTER TABLE metadata1.customers
+        ADD COLUMN new_column VARCHAR
+    ) by duck1;
+quit;
+
+
+/* Catalog info */
+proc sql;
+    connect using duck1;
+    select *
+    from connection to duck1
+    (
+        SELECT *
+        FROM information_schema.tables
+        ORDER BY table_schema, table_name
+    );
+    disconnect from duck1;
+quit;
+
+
+/* DuckLake snapshot table */
+proc sql;
+    connect using duck1;
+    create table work.ducklake_snapshot as
+    select *
+    from connection to duck1
+    (
+        select *
+        from "__ducklake_metadata_metadata1".main.ducklake_snapshot
+    );
+quit;
+
+
+/* Table changes (data feed) */
+proc sql;
+    connect using duck1;
+    create table work.table_changes as
+    select *
+    from connection to duck1
+    (
+        SELECT *
+        FROM metadata1.table_changes('customers', 2, 2)
+    );
+quit;
